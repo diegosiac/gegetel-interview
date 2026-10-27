@@ -89,5 +89,5 @@ canjes y le di al agente el catálogo completo. En los tres casos las pruebas fa
 
 ## 4. Tiempo real
 
-Aproximadamente **40 minutos** con asistencia de IA, desde la lectura del caso hasta el envío
+Aproximadamente **1:50 minutos** con asistencia de IA, desde la lectura del caso hasta el envío
 (construcción, pruebas, verificación manual y este documento).
