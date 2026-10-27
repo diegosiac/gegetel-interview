@@ -79,7 +79,8 @@ El reloj se inyecta (`get_now`), así que las pruebas fijan la fecha y no depend
 
 ```
 app/
-  main.py      # create_app: esquema, semilla y routers
+  factory.py   # create_app: esquema, semilla y routers
+  main.py      # instancia para uvicorn (usa GEGE_DB_PATH)
   db.py        # esquema SQLite y catálogo
   deps.py      # sesión de BD, reloj e identidad por encabezados
   lines.py     # alta por empresa + webhook de red

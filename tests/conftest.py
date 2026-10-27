@@ -4,7 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.deps import get_now
-from app.main import create_app
+from app.factory import create_app
 
 # 2026-10-27 09:00 in Mexico City: B3 (expired 2026-09-30) must not be available.
 OCTOBER_NOW = datetime(2026, 10, 27, 15, 0, tzinfo=UTC)
