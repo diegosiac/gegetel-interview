@@ -27,6 +27,7 @@ def _get_company_line(db: sqlite3.Connection, company_id: str, line_id: str) -> 
     row = db.execute(
         "SELECT * FROM lines WHERE line_id = ? AND company_id = ?", (line_id, company_id)
     ).fetchone()
+
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Line not found")
     return row
@@ -58,6 +59,7 @@ def list_lines(company_id: CompanyId, db: Db) -> list[LineOut]:
     rows = db.execute(
         "SELECT * FROM lines WHERE company_id = ? ORDER BY line_id", (company_id,)
     ).fetchall()
+
     return [_line_out(row) for row in rows]
 
 
@@ -73,8 +75,10 @@ def update_line(line_id: str, payload: LineUpdate, company_id: CompanyId, db: Db
             "UPDATE lines SET plan = ? WHERE line_id = ? AND company_id = ?",
             (payload.plan, line_id, company_id),
         )
+
     if cursor.rowcount == 0:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Line not found")
+
     return _line_out(_get_company_line(db, company_id, line_id))
 
 
@@ -89,6 +93,7 @@ def apply_network_event(db: sqlite3.Connection, event: NetworkEvent, now: dateti
             " VALUES (?, ?, ?, ?, ?)",
             (event.event_id, event.line_id, event.type, occurred_at, _utc_iso(now)),
         )
+
         if inserted.rowcount == 0:
             result = "duplicate"
         else:
@@ -99,6 +104,7 @@ def apply_network_event(db: sqlite3.Connection, event: NetworkEvent, now: dateti
                 " WHERE line_id = ? AND (last_event_at IS NULL OR last_event_at < ?)",
                 (EVENT_TO_STATUS[event.type], occurred_at, event.line_id, occurred_at),
             )
+
             if updated.rowcount == 1:
                 db.execute("UPDATE network_events SET applied = 1 WHERE event_id = ?", (event.event_id,))
                 result = "applied"
@@ -108,6 +114,7 @@ def apply_network_event(db: sqlite3.Connection, event: NetworkEvent, now: dateti
         line_status = db.execute(
             "SELECT status FROM lines WHERE line_id = ?", (event.line_id,)
         ).fetchone()["status"]
+
     return NetworkEventResult(event_id=event.event_id, result=result, line_status=line_status)
 
 

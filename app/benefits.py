@@ -44,11 +44,13 @@ def redeem_benefit(benefit_id: str, line: CurrentLine, db: Db, now: Now) -> Rede
 
     available = {row["id"]: row for row in eligible_benefits(db, line["plan"], local_today(now))}
     benefit = available.get(benefit_id)
+
     if benefit is None:
         # Same answer for "does not exist", "expired" and "not in your plan": nothing to redeem.
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Benefit not available for this line")
 
     period = now.astimezone(LOCAL_TZ).strftime("%Y-%m")
+
     try:
         with db:
             db.execute(
@@ -57,4 +59,5 @@ def redeem_benefit(benefit_id: str, line: CurrentLine, db: Db, now: Now) -> Rede
             )
     except sqlite3.IntegrityError:
         raise HTTPException(status.HTTP_409_CONFLICT, "Benefit already redeemed this month")
+
     return RedemptionOut(benefit_id=benefit_id, code=benefit["code"], period=period)

@@ -26,6 +26,7 @@ Now = Annotated[datetime, Depends(get_now)]
 def current_company(x_company_id: Annotated[str, Header()], db: Db) -> str:
     """Simulated admin auth: the company comes from the X-Company-Id header."""
     row = db.execute("SELECT id FROM companies WHERE id = ?", (x_company_id,)).fetchone()
+
     if row is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Unknown company")
     return row["id"]
@@ -39,6 +40,7 @@ def current_line(company_id: CompanyId, x_line_id: Annotated[str, Header()], db:
     line = db.execute(
         "SELECT * FROM lines WHERE line_id = ? AND company_id = ?", (x_line_id, company_id)
     ).fetchone()
+
     if line is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Unknown line for this company")
     return line

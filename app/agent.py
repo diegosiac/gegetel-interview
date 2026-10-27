@@ -32,6 +32,7 @@ STOPWORDS = {"la", "el", "los", "las", "de", "go"}
 
 def normalize_words(text: str) -> set[str]:
     without_accents = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+
     return set(re.findall(r"[a-z0-9]+", without_accents.lower()))
 
 
@@ -44,12 +45,14 @@ def select_benefits(question: str, eligible: Sequence[sqlite3.Row]) -> list[sqli
         return by_merchant
 
     categories = {category for category, keywords in CATEGORY_KEYWORDS.items() if keywords & words}
+
     return [b for b in eligible if b["category"] in categories]
 
 
 def ground(selected: Sequence[sqlite3.Row], eligible: Sequence[sqlite3.Row]) -> list[sqlite3.Row]:
     """Guardrail: whatever the matcher returns, keep only benefits the line is eligible for."""
     eligible_ids = {b["id"] for b in eligible}
+
     return [b for b in selected if b["id"] in eligible_ids]
 
 
@@ -57,6 +60,7 @@ def render_answer(benefits: Sequence[sqlite3.Row]) -> str:
     if not benefits:
         return NO_MATCH_MESSAGE
     items = "; ".join(f"{b['merchant']} ({b['category']}): {b['description']}" for b in benefits)
+
     return f"Con tu plan tienes: {items}. Canjéalos desde la sección de beneficios para obtener tu código."
 
 
@@ -64,4 +68,5 @@ def render_answer(benefits: Sequence[sqlite3.Row]) -> str:
 def ask_agent(payload: AgentQuestion, line: CurrentLine, db: Db, now: Now) -> AgentAnswer:
     eligible = eligible_benefits(db, line["plan"], local_today(now))
     benefits = ground(select_benefits(payload.question, eligible), eligible)
+
     return AgentAnswer(answer=render_answer(benefits), benefits=[to_benefit_out(b) for b in benefits])

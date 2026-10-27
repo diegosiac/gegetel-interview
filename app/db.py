@@ -72,23 +72,28 @@ BENEFITS = [
 
 def connect(db_path: str | Path) -> sqlite3.Connection:
     conn = sqlite3.connect(db_path, check_same_thread=False)
+
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
+
     return conn
 
 
 def init_db(db_path: str | Path) -> None:
     conn = connect(db_path)
+
     try:
         with conn:
             conn.executescript(SCHEMA)
             conn.executemany("INSERT OR IGNORE INTO companies (id, name) VALUES (?, ?)", COMPANIES)
+
             for benefit_id, category, merchant, description, code, plans, valid_until in BENEFITS:
                 conn.execute(
                     "INSERT OR IGNORE INTO benefits (id, category, merchant, description, code, valid_until)"
                     " VALUES (?, ?, ?, ?, ?, ?)",
                     (benefit_id, category, merchant, description, code, valid_until),
                 )
+
                 conn.executemany(
                     "INSERT OR IGNORE INTO benefit_plans (benefit_id, plan) VALUES (?, ?)",
                     [(benefit_id, plan) for plan in plans],
@@ -99,6 +104,7 @@ def init_db(db_path: str | Path) -> None:
 
 def open_session(db_path: str | Path) -> Iterator[sqlite3.Connection]:
     conn = connect(db_path)
+
     try:
         yield conn
     finally:
